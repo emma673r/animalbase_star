@@ -5,6 +5,7 @@ window.addEventListener("DOMContentLoaded", start);
 let allAnimals = [];
 let filteredList;
 let isAsc = true;
+let isStar = false;
 
 const catBtn = document.querySelector("[data-filter=cat]");
 const dogBtn = document.querySelector("[data-filter=dog]");
@@ -12,6 +13,7 @@ const allBtn = document.querySelector(`[data-filter="*"]`);
 
 // The prototype for all animals:
 const Animal = {
+  isStar: isStar,
   name: "",
   desc: "-unknown animal-",
   type: "",
@@ -115,6 +117,14 @@ function sortList(sort) {
       isAsc = !isAsc;
       sortedList = sortedList.sort(compareAgesDescending);
     }
+  } else if (sort === "star") {
+    if (isAsc) {
+      isAsc = !isAsc;
+      sortedList = sortedList.sort(compareStarsAscending);
+    } else if (!isAsc) {
+      isAsc = !isAsc;
+      sortedList = sortedList.sort(compareStarsDescending);
+    }
   }
   // *************** Tried to put arrows, could only add one more every time -- couldnt toggle it urgh
   // if (isAsc) {
@@ -212,6 +222,22 @@ function compareAgesDescending(a, b) {
   }
 }
 
+function compareStarsAscending(a, b) {
+  if (a.star < b.star) {
+    return -1;
+  } else {
+    return 1;
+  }
+}
+
+function compareStarsDescending(a, b) {
+  if (a.star > b.star) {
+    return -1;
+  } else {
+    return 1;
+  }
+}
+
 function isCat(animal) {
   return animal.type === "cat";
 }
@@ -231,6 +257,7 @@ function prepAnimal(jsonObject) {
   const animal = Object.create(Animal);
 
   const texts = jsonObject.fullname.split(" ");
+  animal.isStar = false;
   animal.name = texts[0];
   animal.desc = texts[2];
   animal.type = texts[3];
@@ -257,6 +284,79 @@ function displayAnimal(animal) {
   clone.querySelector("[data-field=type]").textContent = animal.type;
   clone.querySelector("[data-field=age]").textContent = animal.age;
 
+  // *** Lukas snippet ****** ABSOLUTE WINNER **********
+  animal.isStar ? (clone.querySelector(`[data-field="star"]`).textContent = "⭐") : (clone.querySelector(`[data-field="star"]`).textContent = "☆");
+  clone.querySelector(`[data-field="star"]`).addEventListener("click", (event) => {
+    animal.isStar = !animal.isStar;
+    if (animal.isStar) {
+      event.target.textContent = "⭐";
+    } else {
+      event.target.textContent = "☆";
+    }
+
+    sortList(allAnimals);
+  });
+
+  // *** Lukas snippet end *******************************
+
   // append clone to list
   document.querySelector("#list tbody").appendChild(clone);
+
+  // *** Klaus snippet **************
+  // clone.querySelector(`[data-field="star"]`).addEventListener("click", toggleStar);
+
+  // function toggleStar() {
+  //   console.log(`**********`);
+  //   //console.log(`toggleStar`);
+  //   console.log(`isStar`, animal.isStar);
+  //   // console.log(`!isStar`, isStar);
+  //   animal.isStar = !animal.isStar;
+
+  // }
+
+  // if (animal.isStar) {
+  //   clone.querySelector(`[data-field="star"]`).textContent = "⭐";
+  // } else {
+  //   clone.querySelector(`[data-field="star"]`).textContent = "☆";
+  // }
+
+  // ** Klaus snippet end ************
+
+  // ** Peter snippet ****************
+
+  // clone.querySelector(`[data-field="star"]`).addEventListener("click", (event) => {
+  //   animal.isStar = !animal.isStar;
+  //   let starText;
+  //   if (animal.isStar) {
+  //     starText = "⭐";
+  //   } else {
+  //     starText = "☆";
+  //   }
+
+  //   event.target.textContent = starText;
+  // });
+
+  // *** Peter snippet end *************
 }
+
+// ** shit i made  haha   sad emoji
+// function selectStar(elm) {
+//   console.log(`toggleStar;`);
+
+//   // console.log(isStar, `isStar`);
+//   // starValue = true;
+//   if (starValue) {
+//     starValue = !starValue;
+//   }
+
+//   displayStar(elm);
+// }
+
+// function displayStar(elm) {
+//   if (starValue) {
+//     elm.target.textContent = "⭐";
+//   } else {
+//     elm.target.textContent = "☆";
+//   }
+//   starValue = !starValue;
+// }

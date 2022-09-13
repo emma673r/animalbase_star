@@ -1,4 +1,4 @@
-[data-action] {
+[data-action], [data-field = "star"] {
   cursor: pointer;
 }
 
