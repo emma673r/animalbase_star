@@ -1,9 +1,18 @@
-[data-action], [data-field = "star"] {
+[data-action],
+[data-field="star"] {
   cursor: pointer;
 }
 
 #sorting th.sortby {
   text-decoration: underline;
+}
+
+#sorting th.sortby[data-sort-direction="asc"]::after {
+  content: "↓";
+}
+
+#sorting th.sortby[data-sort-direction="desc"]::after {
+  content: "↑";
 }
 
 #list {

@@ -4,8 +4,6 @@ window.addEventListener("DOMContentLoaded", start);
 
 let allAnimals = [];
 let filteredList;
-let isAsc = true;
-let isStar = false;
 
 const catBtn = document.querySelector("[data-filter=cat]");
 const dogBtn = document.querySelector("[data-filter=dog]");
@@ -13,11 +11,18 @@ const allBtn = document.querySelector(`[data-filter="*"]`);
 
 // The prototype for all animals:
 const Animal = {
-  isStar: isStar,
   name: "",
   desc: "-unknown animal-",
   type: "",
   age: 0,
+  star: false,
+};
+
+const settings = {
+  filter: "*",
+  sortBy: "name",
+  sortDir: "asc",
+  direction: 1,
 };
 
 // controller
@@ -59,9 +64,27 @@ function selectFilter(elm) {
 }
 
 function selectSorting(elm) {
-  const sort = elm.target.dataset.sort;
-  console.log(sort);
-  sortList(sort);
+  const sortBy = elm.target.dataset.sort;
+  const sortDir = elm.target.dataset.sortDirection;
+
+  // toggle the direction
+  if (sortDir === "asc") {
+    elm.target.dataset.sortDirection = "desc";
+  } else {
+    elm.target.dataset.sortDirection = "asc";
+  }
+
+  // find old sortby elm
+  const oldElm = document.querySelector(`[data-sort="${settings.sortBy}"]`);
+  console.log(oldElm);
+  oldElm.classList.remove("sortby");
+
+  // indicate active sort
+  elm.target.classList.add("sortby");
+  settings.sortBy = sortBy;
+
+  console.log(sortBy);
+  sortList(sortBy, sortDir);
 }
 
 function filterList(animalType) {
@@ -81,80 +104,26 @@ function filterList(animalType) {
   displayList(filteredList);
 }
 
-function sortList(sort) {
+function sortList(sortBy, sortDir) {
   let sortedList = filteredList;
-  console.log(isAsc);
+  let direction = -1;
 
-  if (sort === "name") {
-    if (isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareNamesAscending);
-    } else if (!isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareNamesDescending);
-    }
-  } else if (sort === "type") {
-    if (isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareTypesAscending);
-    } else if (!isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareTypesDescending);
-    }
-  } else if (sort === "desc") {
-    if (isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareDescsAscending);
-    } else if (!isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareDescsDescending);
-    }
-  } else if (sort === "age") {
-    if (isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareAgesAscending);
-    } else if (!isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareAgesDescending);
-    }
-  } else if (sort === "star") {
-    if (isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareStarsAscending);
-    } else if (!isAsc) {
-      isAsc = !isAsc;
-      sortedList = sortedList.sort(compareStarsDescending);
+  if (sortDir === "desc") {
+    direction = 1;
+  } else {
+    direction = -1;
+  }
+
+  sortedList = sortedList.sort(sortByProperty);
+
+  function sortByProperty(animalA, animalB) {
+    console.log(`sort is ${sortBy}`);
+    if (animalA[sortBy] < animalB[sortBy]) {
+      return -1 * direction;
+    } else {
+      return 1 * direction;
     }
   }
-  // *************** Tried to put arrows, could only add one more every time -- couldnt toggle it urgh
-  // if (isAsc) {
-  //   document.querySelectorAll(`[data-action="sort"]`).forEach((button) => {
-  //     console.log(button.innerHTML.replace("&#8595", "&#8593"));
-  //     // console.log(button.textContent);
-  //     button.innerHTML = button.innerHTML + `&#8595`;
-  //   });
-  // }
-  // if (!isAsc) {
-  //   document.querySelectorAll(`[data-action="sort"]`).forEach((button) => {
-  //     console.log(button.innerHTML);
-  //     console.log(button.textContent);
-  //     button.innerHTML += "&#8593";
-  //   });
-  // }
-  // // // // // //
-  // if (isAsc) {
-  //   console.log(`isAsc`);
-  //   document.querySelectorAll(`[data-action="sort"]`).forEach((button) => {
-  //     button.innerHTML.replace("&#8593", "&#8595");
-  //   });
-  // }
-  // if (!isAsc) {
-  //   console.log(`is not Asc`);
-  //   document.querySelectorAll(`[data-action="sort"]`).forEach((button) => {
-  //     button.innerHTML.replace("&#8595", "&#8593");
-  //   });
-  // }
-  // *******************
 
   displayList(sortedList);
 }
@@ -257,11 +226,12 @@ function prepAnimal(jsonObject) {
   const animal = Object.create(Animal);
 
   const texts = jsonObject.fullname.split(" ");
-  animal.isStar = false;
+
   animal.name = texts[0];
   animal.desc = texts[2];
   animal.type = texts[3];
   animal.age = jsonObject.age;
+  animal.star = false;
 
   return animal;
 }
@@ -285,10 +255,10 @@ function displayAnimal(animal) {
   clone.querySelector("[data-field=age]").textContent = animal.age;
 
   // *** Lukas snippet ****** ABSOLUTE WINNER **********
-  animal.isStar ? (clone.querySelector(`[data-field="star"]`).textContent = "⭐") : (clone.querySelector(`[data-field="star"]`).textContent = "☆");
+  animal.star ? (clone.querySelector(`[data-field="star"]`).textContent = "⭐") : (clone.querySelector(`[data-field="star"]`).textContent = "☆");
   clone.querySelector(`[data-field="star"]`).addEventListener("click", (event) => {
-    animal.isStar = !animal.isStar;
-    if (animal.isStar) {
+    animal.star = !animal.star;
+    if (animal.star) {
       event.target.textContent = "⭐";
     } else {
       event.target.textContent = "☆";
